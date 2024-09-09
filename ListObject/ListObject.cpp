@@ -1,15 +1,15 @@
 #include "ListObject.h"
 
 template<typename T>
-ListObject<T>::ListObject(T data, std::unique_ptr<ListObject<T>>* next) : data_(data) {
+ListObject<T>::ListObject(T data, std::shared_ptr<ListObject<T>>* next) : data_(data) {
         next_ = std::move(next);
 }
 
 #ifndef TWO_LINKED_LIST
 template<typename T>
 ListObject<T>::ListObject(T data,
- std::unique_ptr<ListObject<T>>* next,
- std::unique_ptr<ListObject<T>> prev) {
+ std::shared_ptr<ListObject<T>>* next,
+ std::shared_ptr<ListObject<T>> prev) {
     data_ = data;
     next_ = std::move(next);
     prev_ = std::move(prev);

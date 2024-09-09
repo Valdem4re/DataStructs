@@ -6,12 +6,12 @@ class ListObject {
     public:
 
     //--------------------CONSTRUCTORS------------------------
-    ListObject(T data = 0, std::unique_ptr<ListObject<T>>* next = nullptr);
+    ListObject(T data = 0, std::shared_ptr<ListObject<T>>* next = nullptr);
 
     #ifndef TWO_LINKED_LIST
         ListObject(T data = 0,
-            std::unique_ptr<ListObject<T>>* next = nullptr,
-            std::unique_ptr<ListObject<T>> prev = nullptr
+            std::shared_ptr<ListObject<T>>* next = nullptr,
+            std::shared_ptr<ListObject<T>> prev = nullptr
         );
     #endif
     
@@ -36,9 +36,9 @@ class ListObject {
     private:
 
     T data_{0};
-    std::unique_ptr<ListObject<T>> next_{nullptr};
+    std::shared_ptr<ListObject<T>> next_{nullptr};
 
     #ifndef TWO_LINKED_LIST
-    std::unique_ptr<ListObject<T>> prev_{nullptr};
+    std::shared_ptr<ListObject<T>> prev_{nullptr};
     #endif
 };
