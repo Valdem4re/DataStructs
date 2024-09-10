@@ -16,12 +16,14 @@ public:
         push_back(currObj->get_data());
         currObj = currObj->get_next();
         }
+        size_ = 1;
     }
 
     OneLinkedList(OneLinkedList<T> &&other) noexcept
         : head_(std::move(other.head_)), tail_(std::move(other.tail_)) {
         other.head_ = nullptr;
         other.tail_ = nullptr;
+        size_ = 1;
     }
 
     OneLinkedList<T> &operator=(const OneLinkedList<T> &other) {
@@ -33,6 +35,7 @@ public:
             currObj = currObj->get_next();
         }
         }
+        size_ = other.size_;
         return *this;
     }
 
@@ -44,6 +47,7 @@ public:
         other.head_ = nullptr;
         other.tail_ = nullptr;
         }
+        size_ = other.size_;
         return *this;
     }
 
@@ -117,6 +121,7 @@ template <typename T> void OneLinkedList<T>::push_back(T const &data) {
         head_ = newObj;
     }
     tail_ = newObj;
+    size_++;
 }
 
 template <typename T>
@@ -128,6 +133,7 @@ void OneLinkedList<T>::push_back(const ListObject<T> &data) {
         head_ = newObj;
     }
     tail_ = newObj;
+    size_++;
 }
 
 template <typename T>
@@ -137,6 +143,7 @@ void OneLinkedList<T>::push_front(const ListObject<T> &data) {
         tail_ = newObj;
     }
     head_ = newObj;
+    size_++;
 }
 
 template <typename T> void OneLinkedList<T>::push_front(T const &data) {
@@ -145,6 +152,7 @@ template <typename T> void OneLinkedList<T>::push_front(T const &data) {
         tail_ = newObj;
     }
     head_ = newObj;
+    size_++;
 }
 
 template <typename T> void OneLinkedList<T>::pop_back() {
@@ -163,6 +171,7 @@ template <typename T> void OneLinkedList<T>::pop_back() {
 
     currObj->set_next(nullptr);
     tail_ = currObj;
+    size_--;
 }
 
 template <typename T> 
@@ -174,4 +183,5 @@ void OneLinkedList<T>::pop_front() {
         return;
     }
     head_ = head_->get_next();
+    size_--;
 }
