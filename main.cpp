@@ -38,6 +38,7 @@ int main() {
     std::shared_ptr< Object<Complex> > ptr_lst = lst.get_head();
     while(ptr_lst) {
         Complex res = ptr_lst->get_data();
+        std::cout << res.re << " " << res.im << std::endl;
         ptr_lst = ptr_lst->get_next();
     }
 
@@ -45,6 +46,7 @@ int main() {
     std::shared_ptr< Object<int> > ptr_lst_int = lst_int.get_head();
     while(ptr_lst_int) {
         int a = ptr_lst_int->get_data();
+        std::cout << a << std::endl;
         ptr_lst_int = ptr_lst_int->get_next();
     }
     return 0;

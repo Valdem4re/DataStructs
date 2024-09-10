@@ -1,185 +1,177 @@
 #pragma once
 
-#include <memory>
-#include "../ListObject/ListObject.h"
 #include "../Exceptions/LinkedListIndexError.h"
+#include "../ListObject/ListObject.h"
+#include <memory>
 
-template<typename T>
-class OneLinkedList : public std::enable_shared_from_this<OneLinkedList<T>> {
+template <typename T> 
+class OneLinkedList {
 public:
     OneLinkedList() : head_(nullptr), tail_(nullptr), size_(0) {}
 
-    explicit OneLinkedList(T data);
+    OneLinkedList(const OneLinkedList &other)
+        : head_(other.head_), tail_(other.tail_) {
+        auto currObj = other.head_;
+        while (currObj) {
+        push_back(currObj->get_data());
+        currObj = currObj->get_next();
+        }
+    }
 
-    explicit OneLinkedList(const ListObject<T>& obj);
+    OneLinkedList(OneLinkedList<T> &&other) noexcept
+        : head_(std::move(other.head_)), tail_(std::move(other.tail_)) {
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+    }
+
+    OneLinkedList<T> &operator=(const OneLinkedList<T> &other) {
+        if (this != &other) {
+        clear();
+        auto currObj = other.head_;
+        while (currObj) {
+            push_back(currObj->get_data());
+            currObj = currObj->get_next();
+        }
+        }
+        return *this;
+    }
+
+    OneLinkedList<T> &operator=(OneLinkedList<T> &&other) noexcept {
+        if (this != &other) {
+        clear();
+        head_ = std::move(other.head_);
+        tail_ = std::move(other.tail_);
+        other.head_ = nullptr;
+        other.tail_ = nullptr;
+        }
+        return *this;
+    }
+
+    virtual ~OneLinkedList() { clear(); }
 
     std::shared_ptr<ListObject<T>> get_head() const { return head_; }
 
-    void push_back(T const& data);
-    void push_back(const ListObject<T>& data);
+    int size() const { return size_; }
 
-    void push_front(const ListObject<T>& obj);
-    void push_front(T const& data);
+    void push_back(T const &data);
+    void push_back(const ListObject<T> &data);
+
+    void push_front(const ListObject<T> &obj);
+    void push_front(T const &data);
 
     void pop_back();
     void pop_front();
 
-    int size() const { return size_; }
-
-    class Item {
-    public:
-        Item(std::weak_ptr<OneLinkedList<T>> curr = std::weak_ptr<OneLinkedList<T>>(), int idx = 0)
-            : current_(curr), index_(idx) {}
-
-        operator T() const {
-            auto current = current_.lock();
-            if (!current || index_ < 0 || index_ >= current->size())
-                throw LinkedListIndexError("Invalid element index.");
-
-            std::shared_ptr<ListObject<T>> curr = current->head_;
-            for (int i = 0; i < index_; ++i)
-                curr = curr->get_next();
-            return curr->get_data();
-        }
-
-        void operator=(const T& val) {
-            auto current = current_.lock();
-            if (!current || index_ < 0 || index_ >= current->size())
-                throw LinkedListIndexError("Invalid element index.");
-
-            std::shared_ptr<ListObject<T>> curr_obj = current->head_;
-            for (int i = 0; i < index_; ++i)
-                curr_obj = curr_obj->get_next();
-            curr_obj->set_data(val);
-        }
-
     private:
-        std::weak_ptr<OneLinkedList<T>> current_;
-        int index_;
-    };
-
-    Item operator[](int index) {
-        if (index < 0 || index >= size_)
-            throw LinkedListIndexError("Index out of bounds.");
-        return Item(this->shared_from_this(), index);
-    }
-
-private:
     std::shared_ptr<ListObject<T>> head_;
     std::shared_ptr<ListObject<T>> tail_;
     int size_;
 
-    void initialize_list(const std::shared_ptr<ListObject<T>>& obj);
+    void clear() {
+        while (head_)
+        pop_front();
+    }
+
+    class Item{
+        int index_{0};
+        std::shared_ptr<OneLinkedList<T>> current_{nullptr};
+        
+        public:
+
+        Item(OneLinkedList<T> *ptr, int index = 0) : current_(ptr), index_(index) {}
+
+        operator T() const {
+            if(index_ >= current_->size() || index_ < 0)
+                throw LinkedListIndexError("Invalid element index.");
+            auto currObj = current_->get_head();
+            for (int i = 0; i < index_ && currObj; ++i) {
+                currObj = currObj->get_next();
+            }
+            return currObj->get_data();
+        }
+
+        T operator=(const T value) {
+            if(index_ >= current_->size() || index_ < 0)
+                throw LinkedListIndexError("Invalid element index.");
+            auto currObj = current_->get_head();
+            for (int i = 0; i < index_ && currObj; ++i) {
+                currObj = currObj->get_next();
+            }
+            currObj->set_data(value);
+            return value;
+        }
+    };
+    public:
+
+    Item operator[](const int i) {
+        return Item(this, i);
+    }
 };
 
 // Implementation
-
-template<typename T>
-OneLinkedList<T>::OneLinkedList(T data) {
-    head_ = std::make_shared<ListObject<T>>(data);
-    tail_ = head_;
-    size_ = 1;
-}
-
-template<typename T>
-OneLinkedList<T>::OneLinkedList(const ListObject<T>& obj) {
-    size_ = 1;
-    head_ = std::make_shared<ListObject<T>>(obj);
-
-    auto current = head_;
-    while (current->get_next()) {
-        current = current->get_next();
-        ++size_;
-    }
-    tail_ = current;
-}
-
-template<typename T>
-void OneLinkedList<T>::push_back(T const& data) {
+template <typename T> void OneLinkedList<T>::push_back(T const &data) {
     auto newObj = std::make_shared<ListObject<T>>(data);
-
-    if (!head_) {
-        initialize_list(newObj);
-    } else {
+    if (tail_) {
         tail_->set_next(newObj);
-        tail_ = newObj;
-        ++size_;
+    } else {
+        head_ = newObj;
     }
+    tail_ = newObj;
 }
 
-template<typename T>
-void OneLinkedList<T>::push_back(const ListObject<T>& data) {
+template <typename T>
+void OneLinkedList<T>::push_back(const ListObject<T> &data) {
     auto newObj = std::make_shared<ListObject<T>>(data);
-
-    if (!head_) {
-        initialize_list(newObj);
-    } else {
+    if (tail_) {
         tail_->set_next(newObj);
+    } else {
+        head_ = newObj;
+    }
+    tail_ = newObj;
+}
+
+template <typename T>
+void OneLinkedList<T>::push_front(const ListObject<T> &data) {
+    auto newObj = std::make_shared<ListObject<T>>(data, head_);
+    if (!tail_) {
         tail_ = newObj;
-        ++size_;
     }
+    head_ = newObj;
 }
 
-template<typename T>
-void OneLinkedList<T>::push_front(const ListObject<T>& obj) {
-    auto newObj = std::make_shared<ListObject<T>>(obj);
-
-    if (!head_) {
-        initialize_list(newObj);
-    } else {
-        newObj->set_next(head_);
-        head_ = newObj;
-        ++size_;
+template <typename T> void OneLinkedList<T>::push_front(T const &data) {
+    auto newObj = std::make_shared<ListObject<T>>(data, head_);
+    if (!tail_) {
+        tail_ = newObj;
     }
+    head_ = newObj;
 }
 
-template<typename T>
-void OneLinkedList<T>::push_front(T const& data) {
-    auto newObj = std::make_shared<ListObject<T>>(data);
+template <typename T> void OneLinkedList<T>::pop_back() {
+    if (!head_)
+        return;
 
-    if (!head_) {
-        initialize_list(newObj);
-    } else {
-        newObj->set_next(head_);
-        head_ = newObj;
-        ++size_;
+    if (head_ == tail_) {
+        head_ = tail_ = nullptr;
+        return;
     }
+
+    auto currObj = head_;
+    while (currObj->get_next() != tail_) {
+        currObj = currObj->get_next();
+    }
+
+    currObj->set_next(nullptr);
+    tail_ = currObj;
 }
 
-template<typename T>
-void OneLinkedList<T>::pop_back() {
-    if (size_ == 0) return;
-
-    if (size_ == 1) {
-        head_.reset();
-        tail_.reset();
-    } else {
-        auto currObj = head_;
-        while (currObj->get_next() != tail_) {
-            currObj = currObj->get_next();
-        }
-        currObj->set_next(nullptr);
-        tail_ = currObj;
-    }
-    --size_;
-}
-
-template<typename T>
+template <typename T> 
 void OneLinkedList<T>::pop_front() {
-    if (size_ == 0) return;
-
-    if (size_ == 1) {
-        head_.reset();
-        tail_.reset();
-    } else {
-        head_ = head_->get_next();
+    if (!head_)
+        return;
+    if (head_ == tail_) {
+        head_ = tail_ = nullptr;
+        return;
     }
-    --size_;
-}
-
-template<typename T>
-void OneLinkedList<T>::initialize_list(const std::shared_ptr<ListObject<T>>& obj) {
-    head_ = obj;
-    tail_ = obj;
-    size_ = 1;
+    head_ = head_->get_next();
 }
