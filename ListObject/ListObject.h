@@ -1,6 +1,10 @@
 #pragma once
 #include <memory>
 
+//I was just too lazy to write 2 implementations...
+
+//#define TWO_LINKED_LIST
+
 template<typename T>
 class ListObject {
 public:
@@ -98,5 +102,3 @@ private:
         std::shared_ptr<ListObject<T>> prev_{nullptr};
     #endif
 };
-
-

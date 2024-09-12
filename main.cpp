@@ -25,7 +25,7 @@ int main() {
     ListObject<int> obj4 = std::move(obj2);
     assert(obj4.get_data() == 30);
     assert(obj4.get_next() == nextObj);
-    assert(obj2.get_next() == nullptr); // obj2 должен быть "пустым" после перемещения
+    assert(obj2.get_next() == nullptr);
 
     // Тестирование оператора присваивания копирования
     ListObject<int> obj5(40);
@@ -38,7 +38,7 @@ int main() {
     obj6 = std::move(obj3);
     assert(obj6.get_data() == 30);
     assert(obj6.get_next() == nextObj);
-    assert(obj3.get_next() == nullptr); // obj3 должен быть "пустым" после перемещения
+    assert(obj3.get_next() == nullptr); 
 
     // Тестирование методов сеттеров и геттеров prev, если включена опция TWO_LINKED_LIST
     #ifdef TWO_LINKED_LIST
@@ -131,9 +131,9 @@ int main() {
     // Проверка на недопустимые индексы
     try {
         list6[2] = 110;
-        assert(false); // Ожидаем, что это приведет к исключению
+        assert(false); 
     } catch (const std::exception &e) {
-        // Ожидаем исключение
+
     }
 
     OneLinkedList<double> list7;

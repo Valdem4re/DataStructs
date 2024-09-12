@@ -82,7 +82,7 @@ public:
 
     virtual void erase(const size_t idx);
 
-private:
+protected:
     std::shared_ptr<ListObject<T>> head_;
     std::shared_ptr<ListObject<T>> tail_;
     size_t size_;
