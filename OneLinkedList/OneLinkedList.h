@@ -76,6 +76,12 @@ public:
     void pop_back();
     void pop_front();
 
+    virtual void insert(const size_t idx, const T& data);
+
+    virtual void insert(const size_t idx, const ListObject<T>& data);
+
+    virtual void erase(const size_t idx);
+
 private:
     std::shared_ptr<ListObject<T>> head_;
     std::shared_ptr<ListObject<T>> tail_;
@@ -88,6 +94,7 @@ private:
 
     class Item {
         size_t index_;
+        // I actually tried to do this with shared_ptr, but it didn't work...
         OneLinkedList<T>* current_;
 
     public:
@@ -209,5 +216,50 @@ void OneLinkedList<T>::pop_front() {
         return;
     }
     head_ = head_->get_next();
+    size_--;
+}
+
+template<typename T>
+void OneLinkedList<T>::insert(const size_t idx, const T& data) {
+    if (idx < 0 || idx >= size_)
+        throw LinkedListIndexError("Invalid element index.");
+
+    auto newObj = std::make_shared<ListObject<T>>(data);
+
+    if(idx == 0) {
+        newObj->set_next(head_);
+        head_ = newObj;
+    }
+    else {
+        auto currObj = head_;
+        for (size_t i = 0; i < idx - 1 && currObj; ++i) {
+            currObj = currObj->get_next();
+        }
+        newObj->set_next(currObj->get_next());
+        currObj->set_next(newObj);
+    }
+    ++size_;
+}
+
+template<typename T>
+void OneLinkedList<T>::insert(const size_t idx, const ListObject<T>& data) {
+    insert(idx, data.get_data());
+}
+
+template<typename T>
+void OneLinkedList<T>::erase(const size_t idx) {
+    if(idx < 0 || idx >= size_)
+        throw LinkedListIndexError("Invalid element index.");
+    if(idx == 0) {
+        head_ = head_->get_next();
+    }
+    else{
+        auto currObj = head_;
+        for(size_t i = 0; i < idx - 1; i++) {
+            currObj = currObj->get_next();
+        }
+        auto objToDelete = currObj->get_next();
+        currObj->set_next(objToDelete->get_next());
+    }
     size_--;
 }
