@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Exceptions/LinkedListIndexError.h"
+#include "../Exceptions/Exceptions.h"
 #include "../ListObject/ListObject.h"
 #include <memory>
 
@@ -87,28 +87,41 @@ private:
     }
 
     class Item {
-        size_t index_{0};
-        std::shared_ptr<OneLinkedList<T>> current_{nullptr};
+        size_t index_;
+        OneLinkedList<T>* current_;
 
     public:
-        Item(OneLinkedList<T>* ptr, size_t index = 0) : current_(ptr), index_(index) {}
+        Item(OneLinkedList<T>* list, size_t index = 0)
+            : current_(list), index_(index) {
+            if (index_ >= current_->size_) {
+                throw LinkedListIndexError("Invalid element index.");
+            }
+        }
 
         operator T() const {
-            if (index_ >= current_->size() || index_ < 0)
+            if (index_ >= current_->size_) {
                 throw LinkedListIndexError("Invalid element index.");
-            auto currObj = current_->get_head();
+            }
+            auto currObj = current_->head_;
             for (size_t i = 0; i < index_ && currObj; ++i) {
                 currObj = currObj->get_next();
+            }
+            if (!currObj) {
+                throw ListObjectError("Unexpected error: ListObject is null.");
             }
             return currObj->get_data();
         }
 
-        T operator=(const T value) {
-            if (index_ >= current_->size() || index_ < 0)
+        T operator=(const T& value) {
+            if (index_ >= current_->size_) {
                 throw LinkedListIndexError("Invalid element index.");
-            auto currObj = current_->get_head();
+            }
+            auto currObj = current_->head_;
             for (size_t i = 0; i < index_ && currObj; ++i) {
                 currObj = currObj->get_next();
+            }
+            if (!currObj) {
+                throw ListObjectError("Unexpected error: ListObject is null.");
             }
             currObj->set_data(value);
             return value;
@@ -119,8 +132,6 @@ public:
     Item operator[](size_t i) {
         return Item(this, i);
     }
-
-private:
 };
 
 template <typename T>
