@@ -73,7 +73,7 @@ public:
 
     void clear() {
         while (head_)
-        pop_front();
+            pop_front();
     }
 
     class Item{
@@ -161,6 +161,7 @@ template <typename T> void OneLinkedList<T>::pop_back() {
 
     if (head_ == tail_) {
         head_ = tail_ = nullptr;
+        size_--;
         return;
     }
 
@@ -180,6 +181,7 @@ void OneLinkedList<T>::pop_front() {
         return;
     if (head_ == tail_) {
         head_ = tail_ = nullptr;
+        size_--;
         return;
     }
     head_ = head_->get_next();

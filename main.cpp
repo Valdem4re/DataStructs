@@ -1,53 +1,142 @@
 #include <iostream>
 #include "OneLinkedList/OneLinkedList.h"
-
-struct Complex{
-    int re{0};
-    int im{0};
-    Complex(int r = 0, int i = 0) : re(r), im(i) {}
-
-};
-
-template<typename T>
-using Object = ListObject<T>;
+#include "ListObject/ListObject.h"
+#include <cassert>
 
 
 int main() {
-    OneLinkedList<Complex> lst; // пустой односвязный список для хранения данных типа Complex (структура)
+    // Тестирование конструктора с параметрами
+    ListObject<int> obj1(10);
+    assert(obj1.get_data() == 10);
+    assert(obj1.get_next() == nullptr);
 
-    lst.push_back(Complex {1, 2}); // добавление в конец списка
-    lst.push_back(Complex {3, 4}); // добавление в конец спискf
+    // Тестирование конструктора с указателем на следующий элемент
+    auto nextObj = std::make_shared<ListObject<int>>(20);
+    ListObject<int> obj2(30, nextObj);
+    assert(obj2.get_data() == 30);
+    assert(obj2.get_next() == nextObj);
 
-    lst.push_front(Complex {-1, -2}); // добавление в начало списка
-    lst.pop_back(); // удаление последнего элемента (если его нет, то ничего не делать)
-    lst.pop_front(); // удаление первого элемента (если его нет, то ничего не делать)
+    // Тестирование конструктора копирования
+    ListObject<int> obj3 = obj2;
+    assert(obj3.get_data() == 30);
+    assert(obj3.get_next() == nextObj);
 
-    Complex d = lst[0];  // получение первого элемента по индексу
-    lst[0] = Complex {5, 8}; // запись в первый элемент по индексу
+    // Тестирование конструктора перемещения
+    ListObject<int> obj4 = std::move(obj2);
+    assert(obj4.get_data() == 30);
+    assert(obj4.get_next() == nextObj);
+    assert(obj2.get_next() == nullptr); // obj2 должен быть "пустым" после перемещения
 
-    OneLinkedList<int> lst_int; // еще один односвязный список для хранения данных типа int
+    // Тестирование оператора присваивания копирования
+    ListObject<int> obj5(40);
+    obj5 = obj3;
+    assert(obj5.get_data() == 30);
+    assert(obj5.get_next() == nextObj);
 
-    lst_int.push_back(1); // добавление в конец списка
-    lst_int.push_back(2);
-    lst_int.push_back(3);
+    // Тестирование оператора присваивания перемещения
+    ListObject<int> obj6(50);
+    obj6 = std::move(obj3);
+    assert(obj6.get_data() == 30);
+    assert(obj6.get_next() == nextObj);
+    assert(obj3.get_next() == nullptr); // obj3 должен быть "пустым" после перемещения
 
-    int var = lst_int[1]; // чтение данных из второго элемента списка
-    lst_int[2] = -5; // запись данных в третий элемент списка
+    // Тестирование методов сеттеров и геттеров prev, если включена опция TWO_LINKED_LIST
+    #ifdef TWO_LINKED_LIST
+    auto prevObj = std::make_shared<ListObject<int>>(60);
+    ListObject<int> obj7(70, nextObj, prevObj);
+    assert(obj7.get_data() == 70);
+    assert(obj7.get_next() == nextObj);
+    assert(obj7.get_prev() == prevObj);
 
-    // перебор первого списка
-    std::shared_ptr< Object<Complex> > ptr_lst = lst.get_head();
-    while(ptr_lst) {
-        Complex res = ptr_lst->get_data();
-        std::cout << res.re << " " << res.im << std::endl;
-        ptr_lst = ptr_lst->get_next();
+    obj7.set_prev(nullptr);
+    assert(obj7.get_prev() == nullptr);
+    #endif
+
+    std::cout << "ListObject: All tests passed!" << std::endl;
+
+    OneLinkedList<int> list1;
+    assert(list1.size() == 0);
+    assert(list1.get_head() == nullptr);
+
+    // Тестирование push_back и pop_back
+    list1.push_back(10);
+    assert(list1.size() == 1);
+    assert(list1.get_head()->get_data() == 10);
+
+    list1.push_back(20);
+    assert(list1.size() == 2);
+    assert(list1.get_head()->get_next()->get_data() == 20);
+
+    list1.pop_back();
+    assert(list1.size() == 1);
+    assert(list1.get_head()->get_data() == 10);
+
+    list1.pop_back();
+    assert(list1.size() == 0);
+    assert(list1.get_head() == nullptr);
+
+    // Тестирование push_front и pop_front
+    list1.push_front(30);
+    assert(list1.size() == 1);
+    assert(list1.get_head()->get_data() == 30);
+
+    list1.push_front(40);
+    assert(list1.size() == 2);
+    assert(list1.get_head()->get_data() == 40);
+    assert(list1.get_head()->get_next()->get_data() == 30);
+
+    list1.pop_front();
+    assert(list1.size() == 1);
+    assert(list1.get_head()->get_data() == 30);
+
+    list1.pop_front();
+    assert(list1.size() == 0);
+    assert(list1.get_head() == nullptr);
+
+    // Тестирование оператора присваивания копирования
+    OneLinkedList<int> list2;
+    list2.push_back(50);
+    list2.push_back(60);
+
+    OneLinkedList<int> list3 = list2;
+    assert(list3.size() == 2);
+    assert(list3.get_head()->get_data() == 50);
+    assert(list3.get_head()->get_next()->get_data() == 60);
+
+    // Тестирование оператора присваивания перемещения
+    OneLinkedList<int> list4 = std::move(list2);
+    assert(list4.size() == 2);
+    assert(list4.get_head()->get_data() == 50);
+    assert(list4.get_head()->get_next()->get_data() == 60);
+    assert(list2.size() == 0);
+    assert(list2.get_head() == nullptr);
+
+    // Тестирование оператора присваивания копирования
+    OneLinkedList<int> list5;
+    list5.push_back(70);
+    list5.push_back(80);
+
+    OneLinkedList<int> list6;
+    list6 = list5;
+    assert(list6.size() == 2);
+    assert(list6.get_head()->get_data() == 70);
+    assert(list6.get_head()->get_next()->get_data() == 80);
+
+    // Тестирование метода [] для доступа и модификации элементов
+    list6[0] = 90;
+    list6[1] = 100;
+    assert(list6[0] == 90);
+    assert(list6[1] == 100);
+
+    // Проверка на недопустимые индексы
+    try {
+        list6[2] = 110;
+        assert(false); // Ожидаем, что это приведет к исключению
+    } catch (const std::exception &e) {
+        // Ожидаем исключение
     }
 
-    // перебор второго списка
-    std::shared_ptr< Object<int> > ptr_lst_int = lst_int.get_head();
-    while(ptr_lst_int) {
-        int a = ptr_lst_int->get_data();
-        std::cout << a << std::endl;
-        ptr_lst_int = ptr_lst_int->get_next();
-    }
+    std::cout << "OneLinkedList: All tests passed!" << std::endl;
+
     return 0;
 }
